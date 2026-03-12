@@ -1,7 +1,39 @@
 ﻿@page "/"
+@using TRPO_Coursework.Services
+@inject SimulationService Simulation
+@implements IDisposable
 
-<PageTitle>Home</PageTitle>
+<PageTitle>ЦУМ: Симуляція кас</PageTitle>
 
-<h1>Hello, world!</h1>
+<p>Черга: @Simulation.Queue.Count</p>
+<p>Обслужено: @Simulation.TotalCustomersServed</p>
 
-Welcome to your new app.
+<h4>Каси</h4>
+@foreach (var item in Simulation.CashDesks)
+{
+	<div>
+    Каса @(item.Id): @(item.IsBusy ? $"Покупець #{item.CurrentCustomer.Id}" : "Вільна")
+</div>
+}
+
+<p/>
+
+<button class="btn btn-primary" @onclick="() => Simulation.Start()">Старт</button>
+<button class="btn btn-primary" @onclick="() => Simulation.Stop()">Стоп</button>
+
+@code {
+	private Action? handler;
+
+	protected override void OnInitialized()
+	{
+		handler = async () => await InvokeAsync(StateHasChanged);
+		Simulation.OnChange += handler;
+		Simulation.Start();
+	}
+
+	public void Dispose()
+	{
+		if (handler != null)
+			Simulation.OnChange -= handler;
+	}
+}
