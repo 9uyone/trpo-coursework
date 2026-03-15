@@ -1,7 +1,7 @@
 ﻿namespace TRPO_Coursework.Models;
 
 public class CashDesk {
-	private static uint _lastId = 1;
+	private static uint _lastId = 0;
 
 	public CashDesk() {
 		Id = Interlocked.Increment(ref _lastId);
