@@ -28,7 +28,6 @@
 	{
 		handler = async () => await InvokeAsync(StateHasChanged);
 		Simulation.OnChange += handler;
-		Simulation.Start();
 	}
 
 	public void Dispose()

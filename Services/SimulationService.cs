@@ -63,8 +63,7 @@ public class SimulationService {
 				OnChange?.Invoke();
 			}
 		}
-		catch (OperationCanceledException) {
-		}
+		catch (OperationCanceledException) {}
 	}
 
 	private async Task CashDeskWorker(CashDesk cashDesk, CancellationToken cancellationToken) {
