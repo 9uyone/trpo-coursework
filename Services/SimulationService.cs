@@ -1,19 +1,23 @@
 ﻿using System.Collections.Concurrent;
+using TRPO_Coursework.Interfaces;
 using TRPO_Coursework.Models;
 
 namespace TRPO_Coursework.Services;
 
 public class SimulationService {
-	private int totalCustomersServed;
 	private CancellationTokenSource? cancellationTokenSource;
 
-	public ConcurrentQueue<Customer> Queue { get; private set; } = new();
+	private ConcurrentQueue<Customer> Queue { get; set; } = new();
 	public List<CashDesk> CashDesks { get; private set; } = new();
-	public uint TotalCustomersServed => (uint)Volatile.Read(ref totalCustomersServed);
+	
 	public bool Running { get; private set; }
 
 	public event Action? OnChange;
 	private readonly SemaphoreSlim semaphore = new(0);
+
+	// Stats
+	private readonly SimulationStats _stats = new SimulationStats();
+	public IStatsReadOnly Stats => _stats;
 
 	public SimulationService() {
 		CashDesks = [new(), new(), new(), new()];
@@ -59,6 +63,7 @@ public class SimulationService {
 			while (!cancellationToken.IsCancellationRequested) {
 				await Task.Delay(Random.Shared.Next(2, 8) * 100, cancellationToken);
 				Queue.Enqueue(new Customer());
+				_stats.IncrementQueue();
 				semaphore.Release();
 				OnChange?.Invoke();
 			}
@@ -75,15 +80,20 @@ public class SimulationService {
 					continue;
 				}
 
+				_stats.DecrementQueue();
+				customer.StartService();
 				cashDesk.IsBusy = true;
 				cashDesk.CurrentCustomer = customer;
+
 				OnChange?.Invoke();
 
 				await Task.Delay(Random.Shared.Next(2, 11) * 100, cancellationToken);
-				Interlocked.Increment(ref totalCustomersServed);
 
+				_stats.IncrementCustomersServed();
+				customer.FinishService();
 				cashDesk.IsBusy = false;
 				cashDesk.CurrentCustomer = null;
+
 				OnChange?.Invoke();
 			}
 		}

@@ -5,8 +5,8 @@
 
 <PageTitle>ЦУМ: Симуляція кас</PageTitle>
 
-<p>Черга: @Simulation.Queue.Count</p>
-<p>Обслужено: @Simulation.TotalCustomersServed</p>
+<p>Черга: @Simulation.Stats.QueueLength</p>
+<p>Обслужено: @Simulation.Stats.TotalCustomersServed</p>
 
 <h4>Каси</h4>
 @foreach (var item in Simulation.CashDesks)
@@ -16,10 +16,15 @@
 </div>
 }
 
-<p/>
+<p>
+	<button class="btn btn-primary" @onclick="() => Simulation.Start()">Старт</button>
+	<button class="btn btn-primary" @onclick="() => Simulation.Stop()">Стоп</button>
+</p>
 
-<button class="btn btn-primary" @onclick="() => Simulation.Start()">Старт</button>
-<button class="btn btn-primary" @onclick="() => Simulation.Stop()">Стоп</button>
+<p>
+	Максимальна довжина черги: @Simulation.Stats.MaxLength<br />
+	Середня довжина черги: @Simulation.Stats.AverageLength<br />
+</p>
 
 @code {
 	private Action? handler;
