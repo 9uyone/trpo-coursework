@@ -3,13 +3,13 @@
 namespace TRPO_Coursework.Services;
 
 public class SimulationStats: IStatsReadOnly {
-	private uint totalCustomersServed;
+	private uint _totalCustomersServed;
 	private uint _currentLength;
 	private uint _sumLengths;
 	private uint _countSamples;
 
 	// IStatsReadOnly
-	public uint TotalCustomersServed => Volatile.Read(ref totalCustomersServed);
+	public uint TotalCustomersServed => Volatile.Read(ref _totalCustomersServed);
 
 	public uint MaxLength { get; private set; }
 	public double AverageLength => (double)_sumLengths / _countSamples;
@@ -17,7 +17,7 @@ public class SimulationStats: IStatsReadOnly {
 
 	// Methods to update stats
 	internal void IncrementCustomersServed() {
-		Interlocked.Increment(ref totalCustomersServed);
+		Interlocked.Increment(ref _totalCustomersServed);
 	}
 
 	internal void IncrementQueue() {

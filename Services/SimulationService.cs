@@ -5,19 +5,18 @@ using TRPO_Coursework.Models;
 namespace TRPO_Coursework.Services;
 
 public class SimulationService {
+	// State & sync
 	private CancellationTokenSource? cancellationTokenSource;
-
+	private readonly SemaphoreSlim semaphore = new(0);
+	private readonly SimulationStats _stats = new SimulationStats();
 	private ConcurrentQueue<Customer> Queue { get; set; } = new();
+
+	// Public state
 	public List<CashDesk> CashDesks { get; private set; } = new();
-	
 	public bool Running { get; private set; }
+	public IStatsReadOnly Stats => _stats;
 
 	public event Action? OnChange;
-	private readonly SemaphoreSlim semaphore = new(0);
-
-	// Stats
-	private readonly SimulationStats _stats = new SimulationStats();
-	public IStatsReadOnly Stats => _stats;
 
 	public SimulationService() {
 		CashDesks = [new(), new(), new(), new()];
