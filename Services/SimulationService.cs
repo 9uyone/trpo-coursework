@@ -82,7 +82,7 @@ public class SimulationService {
 				await semaphore.WaitAsync(cancellationToken);
 
 				if (!Queue.TryDequeue(out var customer)) {
-					LogEvent(EventType.CustomerNotEnqueued, customer.Id, cashDesk.Id);
+					LogEvent(EventType.CustomerNotEnqueued, cashDeskId: cashDesk.Id);
 					continue;
 				}
 
