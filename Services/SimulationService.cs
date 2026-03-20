@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using SharpRaven.Utilities;
+using System.Collections.Concurrent;
+using TRPO_Coursework.Enums;
 using TRPO_Coursework.Interfaces;
 using TRPO_Coursework.Models;
 
@@ -15,6 +17,7 @@ public class SimulationService {
 	public List<CashDesk> CashDesks { get; private set; } = new();
 	public bool Running { get; private set; }
 	public IStatsReadOnly Stats => _stats;
+	public CircularBuffer<LogEntry> LogEntries { get; private set; } = new(1000);
 
 	public event Action? OnChange;
 
@@ -23,9 +26,8 @@ public class SimulationService {
 	}
 
 	public void Start() {
-		if (Running) {
+		if (Running)
 			return;
-		}
 
 		Running = true;
 		cancellationTokenSource = new();
@@ -36,13 +38,13 @@ public class SimulationService {
 			_ = Task.Run(() => CashDeskWorker(cashDesk, cancellationTokenSource.Token));
 		}
 
-		OnChange?.Invoke();
+		LogEvent(EventType.SimulationStarted);
+		//OnChange?.Invoke();
 	}
 
 	public void Stop() {
-		if (!Running) {
+		if (!Running)
 			return;
-		}
 
 		Running = false;
 		cancellationTokenSource?.Cancel();
@@ -54,17 +56,21 @@ public class SimulationService {
 			cashDesk.CurrentCustomer = null;
 		}
 
-		OnChange?.Invoke();
+		LogEvent(EventType.SimulationStopped);
+		//OnChange?.Invoke();
 	}
 
 	private async Task CustomerGenerator(CancellationToken cancellationToken) {
 		try {
 			while (!cancellationToken.IsCancellationRequested) {
 				await Task.Delay(Random.Shared.Next(2, 8) * 100, cancellationToken);
-				Queue.Enqueue(new Customer());
+				var customer = new Customer();
+				Queue.Enqueue(customer);
+
 				_stats.IncrementQueue();
 				semaphore.Release();
-				OnChange?.Invoke();
+				LogEvent(EventType.CustomerEnqueued, customer.Id);
+				//OnChange?.Invoke();
 			}
 		}
 		catch (OperationCanceledException) {}
@@ -76,15 +82,19 @@ public class SimulationService {
 				await semaphore.WaitAsync(cancellationToken);
 
 				if (!Queue.TryDequeue(out var customer)) {
+					LogEvent(EventType.CustomerNotEnqueued, customer.Id, cashDesk.Id);
 					continue;
 				}
+
+				LogEvent(EventType.CustomerDequeued, customer.Id, cashDesk.Id);
 
 				_stats.DecrementQueue();
 				customer.StartService();
 				cashDesk.IsBusy = true;
 				cashDesk.CurrentCustomer = customer;
 
-				OnChange?.Invoke();
+				LogEvent(EventType.ServiceStarted, customer.Id, cashDesk.Id);
+				//OnChange?.Invoke();
 
 				await Task.Delay(Random.Shared.Next(2, 11) * 100, cancellationToken);
 
@@ -93,7 +103,8 @@ public class SimulationService {
 				cashDesk.IsBusy = false;
 				cashDesk.CurrentCustomer = null;
 
-				OnChange?.Invoke();
+				LogEvent(EventType.ServiceFinished, customer.Id, cashDesk.Id);
+				//OnChange?.Invoke();
 			}
 		}
 		catch (OperationCanceledException) {
@@ -101,5 +112,15 @@ public class SimulationService {
 			cashDesk.CurrentCustomer = null;
 			OnChange?.Invoke();
 		}
+	}
+
+	private void LogEvent(EventType eventType, uint? customerId = null, uint? cashDeskId = null) {
+		LogEntries.Add(new LogEntry(
+			eventType,
+			DateTime.Now,
+			customerId,
+			cashDeskId
+		));
+		OnChange?.Invoke();
 	}
 }

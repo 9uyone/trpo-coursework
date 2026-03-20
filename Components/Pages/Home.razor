@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using TRPO_Coursework.Services
+@using TRPO_Coursework.Models
+@using TRPO_Coursework.Enums
 @inject SimulationService Simulation
 @implements IDisposable
 
@@ -26,6 +28,23 @@
 	Середня довжина черги: @Simulation.Stats.AverageLength<br />
 </p>
 
+<h4>Журнал подій</h4>
+@if (Simulation.LogEntries.IsEmpty())
+{
+	<p>Поки що подій немає.</p>
+}
+else
+{
+	<ul>
+		@foreach (var entry in Simulation.LogEntries.ToList().OrderByDescending(x => x.Timestamp))
+		{
+			<li>
+				@entry.Timestamp.ToString("HH:mm:ss") — @FormatEvent(entry)
+			</li>
+		}
+	</ul>
+}
+
 @code {
 	private Action? handler;
 
@@ -39,5 +58,23 @@
 	{
 		if (handler != null)
 			Simulation.OnChange -= handler;
+	}
+
+	private static string FormatEvent(LogEntry entry)
+	{
+		var customer = entry.CustomerId.HasValue ? $", покупець #{entry.CustomerId.Value}" : string.Empty;
+		var cashDesk = entry.CashDeskId.HasValue ? $", каса #{entry.CashDeskId.Value}" : string.Empty;
+
+		return entry.Event switch
+		{
+			EventType.SimulationStarted => "Симуляцію запущено",
+			EventType.SimulationStopped => "Симуляцію зупинено",
+			EventType.CustomerEnqueued => $"Покупця додано в чергу{customer}",
+			EventType.CustomerDequeued => $"Покупця взято з черги{customer}{cashDesk}",
+			EventType.ServiceStarted => $"Почато обслуговування{customer}{cashDesk}",
+			EventType.ServiceFinished => $"Завершено обслуговування{customer}{cashDesk}",
+			EventType.CustomerNotEnqueued => $"Не вдалося взяти покупця з черги{cashDesk}",
+			_ => "Невідома подія"
+		};
 	}
 }
