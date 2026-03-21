@@ -12,6 +12,8 @@ public class SimulationService {
 	private readonly SemaphoreSlim semaphore = new(0);
 	private readonly SimulationStats _stats = new SimulationStats();
 	private ConcurrentQueue<Customer> Queue { get; set; } = new();
+	private (uint, uint) _generationIntervalSecs = (2 * 60, 7 * 60); // 2 to 8 minutes in seconds
+	private (uint, uint) _servingIntervalSecs = (1 * 60, 10 * 60);
 
 	// Public state
 	public List<CashDesk> CashDesks { get; private set; } = new();
@@ -19,8 +21,22 @@ public class SimulationService {
 	public IStatsReadOnly Stats => _stats;
 	public CircularBuffer<LogEntry> LogEntries { get; private set; } = new(1000);
 
+	public uint SpeedUpTimes { get; set; } = 250;
+	public (uint, uint) GenerationIntervalMs { get => _generationIntervalSecs;
+		set { if (value.Item1 > value.Item2)
+				throw new ArgumentException("Min generation interval must be less than or equal to max generation interval.");
+		_generationIntervalSecs = value;
+	} }
+
+	public (uint, uint) ServingIntervalMs { get => _servingIntervalSecs;
+		set { if (value.Item1 > value.Item2)
+				throw new ArgumentException("Min serving interval must be less than or equal to max serving interval.");
+		_servingIntervalSecs = value;
+	} }
+
 	public event Action? OnChange;
 
+	// Ctor & public methods
 	public SimulationService() {
 		CashDesks = [new(), new(), new(), new()];
 	}
@@ -60,10 +76,13 @@ public class SimulationService {
 		//OnChange?.Invoke();
 	}
 
+	// Private methods
 	private async Task CustomerGenerator(CancellationToken cancellationToken) {
 		try {
 			while (!cancellationToken.IsCancellationRequested) {
-				await Task.Delay(Random.Shared.Next(2, 8) * 100, cancellationToken);
+				var (min, max) = GenerationIntervalMs;
+				var delay = Random.Shared.Next((int)(min * 1000.0 / SpeedUpTimes), (int)(max * 1000.0 / SpeedUpTimes));
+				await Task.Delay(delay, cancellationToken);
 				var customer = new Customer();
 				Queue.Enqueue(customer);
 
@@ -96,7 +115,9 @@ public class SimulationService {
 				LogEvent(EventType.ServiceStarted, customer.Id, cashDesk.Id);
 				//OnChange?.Invoke();
 
-				await Task.Delay(Random.Shared.Next(2, 11) * 100, cancellationToken);
+				var (min, max) = ServingIntervalMs;
+				var delay = Random.Shared.Next((int)(min * 1000 / SpeedUpTimes), (int)(max * 1000 / SpeedUpTimes));
+				await Task.Delay(delay, cancellationToken);
 
 				_stats.IncrementCustomersServed();
 				customer.FinishService();

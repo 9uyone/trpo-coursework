@@ -23,12 +23,32 @@
 	<button class="btn btn-primary" @onclick="() => Simulation.Stop()">Стоп</button>
 </p>
 
+<h4>Налаштування симуляції</h4>
+<div>
+	<div>
+		<label>Прискорення часу: @speedUp x</label><br />
+		<input type="range" class="long-slider" min="1" max="1000" step="1" @bind="speedUp" @bind:event="oninput" @bind:after="ApplySettings" />
+	</div>
+
+	<div>
+		<label>Генерація покупців (сек): від @generationMin до @generationMax</label><br />
+		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="generationMin" @bind:event="oninput" @bind:after="ApplySettings" />
+		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="generationMax" @bind:event="oninput" @bind:after="ApplySettings" />
+	</div>
+
+	<div>
+		<label>Обслуговування (сек): від @servingMin до @servingMax</label><br />
+		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="servingMin" @bind:event="oninput" @bind:after="ApplySettings" />
+		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="servingMax" @bind:event="oninput" @bind:after="ApplySettings" />
+	</div>
+</div>
+
 <p>
 	Максимальна довжина черги: @Simulation.Stats.MaxLength<br />
 	Середня довжина черги: @Simulation.Stats.AverageLength<br />
 </p>
 
-<h4>Журнал подій</h4>
+<h4>Журнал подій <span style="font-size: 10pt; font-style: italic">(1000 останніх)</span></h4>
 @if (Simulation.LogEntries.IsEmpty())
 {
 	<p>Поки що подій немає.</p>
@@ -47,17 +67,42 @@ else
 
 @code {
 	private Action? handler;
+	private int speedUp;
+	private int generationMin;
+	private int generationMax;
+	private int servingMin;
+	private int servingMax;
 
 	protected override void OnInitialized()
 	{
 		handler = async () => await InvokeAsync(StateHasChanged);
 		Simulation.OnChange += handler;
+
+		speedUp = (int)Simulation.SpeedUpTimes;
+		(generationMin, generationMax) = ((int)Simulation.GenerationIntervalMs.Item1, (int)Simulation.GenerationIntervalMs.Item2);
+		(servingMin, servingMax) = ((int)Simulation.ServingIntervalMs.Item1, (int)Simulation.ServingIntervalMs.Item2);
 	}
 
 	public void Dispose()
 	{
 		if (handler != null)
 			Simulation.OnChange -= handler;
+	}
+
+	private void ApplySettings()
+	{
+		if (generationMin > generationMax)
+			generationMax = generationMin;
+
+		if (servingMin > servingMax)
+			servingMax = servingMin;
+
+		if (speedUp < 1)
+			speedUp = 1;
+
+		Simulation.SpeedUpTimes = (uint)speedUp;
+		Simulation.GenerationIntervalMs = ((uint)generationMin, (uint)generationMax);
+		Simulation.ServingIntervalMs = ((uint)servingMin, (uint)servingMax);
 	}
 
 	private static string FormatEvent(LogEntry entry)
