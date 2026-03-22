@@ -98,22 +98,34 @@
 	</div>
 </div>
 
-<h4>Журнал подій <span style="font-size: 10pt; font-style: italic">(1000 останніх)</span></h4>
-@if (Simulation.LogEntries.IsEmpty())
-{
-	<p>Поки що подій немає.</p>
-}
-else
-{
-	<ul>
-		@foreach (var entry in Simulation.LogEntries.ToList().OrderByDescending(x => x.Timestamp))
-		{
-			<li>
-				@entry.Timestamp.ToString("HH:mm:ss") — @FormatEvent(entry)
-			</li>
-		}
-	</ul>
-}
+<div class="accordion mb-3" id="logAccordion">
+	<div class="accordion-item">
+		<h2 class="accordion-header" id="logHeading">
+			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#logCollapse" aria-expanded="false" aria-controls="logCollapse">
+				Журнал подій (1000 останніх)
+			</button>
+		</h2>
+		<div id="logCollapse" class="accordion-collapse collapse" aria-labelledby="logHeading" data-bs-parent="#logAccordion">
+			<div class="accordion-body">
+				@if (Simulation.LogEntries.IsEmpty())
+				{
+					<p>Поки що подій немає.</p>
+				}
+				else
+				{
+					<ul class="mb-0">
+						@foreach (var entry in Simulation.LogEntries.ToList().OrderByDescending(x => x.Timestamp))
+						{
+							<li>
+								@entry.Timestamp.ToString("HH:mm:ss") — @FormatEvent(entry)
+							</li>
+						}
+					</ul>
+				}
+			</div>
+		</div>
+	</div>
+</div>
 
 @code {
 	private Action? handler;
