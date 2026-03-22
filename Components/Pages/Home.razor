@@ -48,6 +48,56 @@
 	Середня довжина черги: @Simulation.Stats.AverageLength<br />
 </p>
 
+<div class="accordion mb-3" id="customerTableAccordion">
+	<div class="accordion-item">
+		<h2 class="accordion-header" id="customerTableHeading">
+			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customerTableCollapse" aria-expanded="false" aria-controls="customerTableCollapse">
+				Часи обслуговування клієнтів (останні 100)
+			</button>
+		</h2>
+		<div id="customerTableCollapse" class="accordion-collapse collapse" aria-labelledby="customerTableHeading" data-bs-parent="#customerTableAccordion">
+			<div class="accordion-body">
+				@if (Simulation.CustomerEntries.IsEmpty())
+				{
+					<p>Ще немає завершених обслуговувань.</p>
+				}
+				else
+				{
+					<div class="table-responsive">
+						<table class="table table-sm table-striped align-middle">
+							<thead>
+								<tr>
+									<th>Клієнт</th>
+									<th>Створено</th>
+									<th>Початок</th>
+									<th>Кінець</th>
+									<th>Очікування</th>
+									<th>Обслуговування</th>
+									<th>Всього</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var customer in Simulation.CustomerEntries.ToList().OrderByDescending(x => x.ServiceFinishedAt))
+								{
+									<tr>
+										<td>#@customer.Id</td>
+										<td>@customer.CreatedAt.ToString("HH:mm:ss")</td>
+										<td>@customer.ServiceStartedAt.ToString("HH:mm:ss")</td>
+										<td>@customer.ServiceFinishedAt.ToString("HH:mm:ss")</td>
+										<td>@FormatSeconds(customer.WaitingTime)</td>
+										<td>@FormatSeconds(customer.ServiceTime)</td>
+										<td>@FormatSeconds(customer.TotalTime)</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
 <h4>Журнал подій <span style="font-size: 10pt; font-style: italic">(1000 останніх)</span></h4>
 @if (Simulation.LogEntries.IsEmpty())
 {
@@ -104,6 +154,8 @@ else
 		Simulation.GenerationIntervalMs = ((uint)generationMin, (uint)generationMax);
 		Simulation.ServingIntervalMs = ((uint)servingMin, (uint)servingMax);
 	}
+
+	private static string FormatSeconds(TimeSpan value) => $"{value.TotalSeconds:F1} с";
 
 	private static string FormatEvent(LogEntry entry)
 	{

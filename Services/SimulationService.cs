@@ -20,6 +20,7 @@ public class SimulationService {
 	public bool Running { get; private set; }
 	public IStatsReadOnly Stats => _stats;
 	public CircularBuffer<LogEntry> LogEntries { get; private set; } = new(1000);
+	public CircularBuffer<Customer> CustomerEntries { get; private set; } = new(100);
 
 	public uint SpeedUpTimes { get; set; } = 250;
 	public (uint, uint) GenerationIntervalMs { get => _generationIntervalSecs;
@@ -123,7 +124,8 @@ public class SimulationService {
 				customer.FinishService();
 				cashDesk.IsBusy = false;
 				cashDesk.CurrentCustomer = null;
-
+				
+				CustomerEntries.Add(customer);
 				LogEvent(EventType.ServiceFinished, customer.Id, cashDesk.Id);
 				//OnChange?.Invoke();
 			}

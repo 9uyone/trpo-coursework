@@ -14,7 +14,7 @@ public class Customer {
 
 	public Customer() {
 		Id = Interlocked.Increment(ref _lastId);
-		CreatedAt = DateTime.UtcNow;
+		CreatedAt = DateTime.Now;
 	}
 
 	public void StartService() {
