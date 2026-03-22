@@ -68,9 +68,6 @@
 							<thead>
 								<tr>
 									<th>Клієнт</th>
-									<th>Створено</th>
-									<th>Початок</th>
-									<th>Кінець</th>
 									<th>Очікування</th>
 									<th>Обслуговування</th>
 									<th>Всього</th>
@@ -81,12 +78,9 @@
 								{
 									<tr>
 										<td>#@customer.Id</td>
-										<td>@customer.CreatedAt.ToString("HH:mm:ss")</td>
-										<td>@customer.ServiceStartedAt.ToString("HH:mm:ss")</td>
-										<td>@customer.ServiceFinishedAt.ToString("HH:mm:ss")</td>
-										<td>@FormatSeconds(customer.WaitingTime)</td>
-										<td>@FormatSeconds(customer.ServiceTime)</td>
-										<td>@FormatSeconds(customer.TotalTime)</td>
+										<td>@FormatSeconds(customer.WaitingTime * Simulation.SpeedUpTimes)</td>
+										<td>@FormatSeconds(customer.ServiceTime * Simulation.SpeedUpTimes)</td>
+										<td>@FormatSeconds(customer.TotalTime * Simulation.SpeedUpTimes)</td>
 									</tr>
 								}
 							</tbody>
