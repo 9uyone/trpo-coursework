@@ -1,7 +1,7 @@
 ﻿namespace TRPO_Coursework.Models;
 
 public class Customer {
-	private static uint _lastId = 1;
+	private static uint _lastId = 0;
 	public DateTime CreatedAt { get; init; }
 	public DateTime ServiceStartedAt { get; private set; }
 	public DateTime ServiceFinishedAt { get; private set; }
