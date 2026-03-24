@@ -7,27 +7,31 @@
 
 <PageTitle>ЦУМ: Симуляція кас</PageTitle>
 
-<p>Черга: @Simulation.Stats.QueueLength</p>
-<p>Обслужено: @Simulation.Stats.TotalCustomersServed</p>
-
 <h4>Каси</h4>
 @foreach (var item in Simulation.CashDesks)
 {
 	<div>
     Каса @(item.Id): @(item.IsBusy ? $"Покупець #{item.CurrentCustomer.Id}" : "Вільна")
 </div>
-}
+}<br />
 
 <p>
 	<button class="btn btn-primary" @onclick="() => Simulation.Start()">Старт</button>
 	<button class="btn btn-primary" @onclick="() => Simulation.Stop()">Стоп</button>
 </p>
 
+<p>
+	Черга: @Simulation.Stats.QueueLength<br />
+	Обслужено: @Simulation.Stats.TotalCustomersServed<br />
+	Максимальна довжина черги: @Simulation.Stats.MaxLength<br />
+	Середня довжина черги: @Simulation.Stats.AverageLength<br />
+</p>
+
 <h4>Налаштування симуляції</h4>
 <div>
 	<div>
 		<label>Прискорення часу: @speedUp x</label><br />
-		<input type="range" class="long-slider" min="1" max="1000" step="1" @bind="speedUp" @bind:event="oninput" @bind:after="ApplySettings" />
+		<input type="range" disabled="@Simulation.Running" class="long-slider" min="1" max="1000" step="1" @bind="speedUp" @bind:event="oninput" @bind:after="ApplySettings" />
 	</div>
 
 	<div>
@@ -42,11 +46,6 @@
 		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="servingMax" @bind:event="oninput" @bind:after="ApplySettings" />
 	</div>
 </div>
-
-<p>
-	Максимальна довжина черги: @Simulation.Stats.MaxLength<br />
-	Середня довжина черги: @Simulation.Stats.AverageLength<br />
-</p>
 
 <div class="accordion mb-3" id="customerTableAccordion">
 	<div class="accordion-item">

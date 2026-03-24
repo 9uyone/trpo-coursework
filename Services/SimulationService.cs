@@ -22,16 +22,24 @@ public class SimulationService {
 	public CircularBuffer<LogEntry> LogEntries { get; private set; } = new(1000);
 	public CircularBuffer<Customer> CustomerEntries { get; private set; } = new(100);
 
-	public uint SpeedUpTimes { get; set; } = 250;
+	public uint SpeedUpTimes { get; 
+		set {
+			if (Running)
+				throw new InvalidOperationException("Не можна змінювати швидкість симуляції під час запуску.");
+			if (value < 1)
+				throw new ArgumentOutOfRangeException(nameof(value), "SpeedUpTimes має бути >= 1.");
+			field = value;
+		}
+	} = 250;
 	public (uint, uint) GenerationIntervalMs { get => _generationIntervalSecs;
 		set { if (value.Item1 > value.Item2)
-				throw new ArgumentException("Min generation interval must be less than or equal to max generation interval.");
+				throw new ArgumentException("Мінімальний час генерації має бути <= максимальному часу.");
 		_generationIntervalSecs = value;
 	} }
 
 	public (uint, uint) ServingIntervalMs { get => _servingIntervalSecs;
 		set { if (value.Item1 > value.Item2)
-				throw new ArgumentException("Min serving interval must be less than or equal to max serving interval.");
+				throw new ArgumentException("Мінімальний час обслуговуванний має бути <= максимальному часу.");
 		_servingIntervalSecs = value;
 	} }
 
