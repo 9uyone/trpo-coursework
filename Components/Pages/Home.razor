@@ -155,7 +155,9 @@
 		if (speedUp < 1)
 			speedUp = 1;
 
-		Simulation.SpeedUpTimes = (uint)speedUp;
+		if (!Simulation.Running)
+			Simulation.SpeedUpTimes = (uint)speedUp;
+
 		Simulation.GenerationIntervalMs = ((uint)generationMin, (uint)generationMax);
 		Simulation.ServingIntervalMs = ((uint)servingMin, (uint)servingMax);
 	}

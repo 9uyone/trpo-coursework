@@ -12,8 +12,6 @@ public class SimulationService {
 	private readonly SemaphoreSlim semaphore = new(0);
 	private readonly SimulationStats _stats = new SimulationStats();
 	private ConcurrentQueue<Customer> Queue { get; set; } = new();
-	private (uint, uint) _generationIntervalSecs = (2 * 60, 7 * 60); // 2 to 8 minutes in seconds
-	private (uint, uint) _servingIntervalSecs = (1 * 60, 10 * 60);
 
 	// Public state
 	public List<CashDesk> CashDesks { get; private set; } = new();
@@ -31,17 +29,23 @@ public class SimulationService {
 			field = value;
 		}
 	} = 250;
-	public (uint, uint) GenerationIntervalMs { get => _generationIntervalSecs;
-		set { if (value.Item1 > value.Item2)
-				throw new ArgumentException("Мінімальний час генерації має бути <= максимальному часу.");
-		_generationIntervalSecs = value;
-	} }
 
-	public (uint, uint) ServingIntervalMs { get => _servingIntervalSecs;
-		set { if (value.Item1 > value.Item2)
+	public (uint, uint) GenerationIntervalMs {
+		get;
+		set {
+			if (value.Item1 > value.Item2)
+				throw new ArgumentException("Мінімальний час генерації має бути <= максимальному часу.");
+		field = value;
+	} } = (2 * 60, 7 * 60);
+
+	public (uint, uint) ServingIntervalMs {
+		get;
+		set {
+			if (value.Item1 > value.Item2)
 				throw new ArgumentException("Мінімальний час обслуговуванний має бути <= максимальному часу.");
-		_servingIntervalSecs = value;
-	} }
+			field = value;
+		}
+	} = (1 * 60, 10 * 60);
 
 	public event Action? OnChange;
 
