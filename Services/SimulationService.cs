@@ -89,6 +89,18 @@ public class SimulationService {
 		//OnChange?.Invoke();
 	}
 
+	public void Reset() {
+		if (Running)
+			Stop();
+
+		Queue = new();
+		CustomerEntries = new(100);
+		LogEntries = new(1000);
+		_stats.Reset();
+
+		OnChange?.Invoke();
+	}
+
 	// Private methods
 	private async Task CustomerGenerator(CancellationToken cancellationToken) {
 		try {

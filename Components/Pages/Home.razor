@@ -7,114 +7,208 @@
 
 <PageTitle>ЦУМ: Симуляція кас</PageTitle>
 
-<h4>Каси</h4>
-@foreach (var item in Simulation.CashDesks)
-{
-	<div>
-    Каса @(item.Id): @(item.IsBusy ? $"Покупець #{item.CurrentCustomer.Id}" : "Вільна")
-</div>
-}<br />
-
-<p>
-	<button class="btn btn-primary" @onclick="() => Simulation.Start()">Старт</button>
-	<button class="btn btn-primary" @onclick="() => Simulation.Stop()">Стоп</button>
-</p>
-
-<p>
-	Черга: @Simulation.Stats.QueueLength<br />
-	Обслужено: @Simulation.Stats.TotalCustomersServed<br />
-	Максимальна довжина черги: @Simulation.Stats.MaxLength<br />
-	Середня довжина черги: @Simulation.Stats.AverageLength<br />
-</p>
-
-<h4>Налаштування симуляції</h4>
-<div>
-	<div>
-		<label>Прискорення часу: @speedUp x</label><br />
-		<input type="range" disabled="@Simulation.Running" class="long-slider" min="1" max="1000" step="1" @bind="speedUp" @bind:event="oninput" @bind:after="ApplySettings" />
+<div class="container-fluid py-4">
+	<div class="header-section mb-5">
+		<h1 class="display-5 mb-2">🏪 ЦУМ: Симуляція кас</h1>
+		<p class="text-muted">Модель паралельної обробки заявок</p>
 	</div>
 
-	<div>
-		<label>Генерація покупців (сек): від @generationMin до @generationMax</label><br />
-		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="generationMin" @bind:event="oninput" @bind:after="ApplySettings" />
-		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="generationMax" @bind:event="oninput" @bind:after="ApplySettings" />
-	</div>
-
-	<div>
-		<label>Обслуговування (сек): від @servingMin до @servingMax</label><br />
-		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="servingMin" @bind:event="oninput" @bind:after="ApplySettings" />
-		<input type="range" class="long-slider" min="10" max="1200" step="10" @bind="servingMax" @bind:event="oninput" @bind:after="ApplySettings" />
-	</div>
-</div>
-
-<div class="accordion mb-3" id="customerTableAccordion">
-	<div class="accordion-item">
-		<h2 class="accordion-header" id="customerTableHeading">
-			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customerTableCollapse" aria-expanded="false" aria-controls="customerTableCollapse">
-				Часи обслуговування клієнтів (останні 100)
-			</button>
-		</h2>
-		<div id="customerTableCollapse" class="accordion-collapse collapse" aria-labelledby="customerTableHeading" data-bs-parent="#customerTableAccordion">
-			<div class="accordion-body">
-				@if (Simulation.CustomerEntries.IsEmpty())
-				{
-					<p>Ще немає завершених обслуговувань.</p>
-				}
-				else
-				{
-					<div class="table-responsive">
-						<table class="table table-sm table-striped align-middle">
-							<thead>
-								<tr>
-									<th>Клієнт</th>
-									<th>Очікування</th>
-									<th>Обслуговування</th>
-									<th>Всього</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach (var customer in Simulation.CustomerEntries.ToList().OrderByDescending(x => x.ServiceFinishedAt))
-								{
-									<tr>
-										<td>#@customer.Id</td>
-										<td>@FormatSeconds(customer.WaitingTime * Simulation.SpeedUpTimes)</td>
-										<td>@FormatSeconds(customer.ServiceTime * Simulation.SpeedUpTimes)</td>
-										<td>@FormatSeconds(customer.TotalTime * Simulation.SpeedUpTimes)</td>
-									</tr>
-								}
-							</tbody>
-						</table>
-					</div>
-				}
+	<div class="row g-4">
+		<!-- Статистика -->
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Черга</h6>
+				<p class="stat-value">@Simulation.Stats.QueueLength</p>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Обслужено</h6>
+				<p class="stat-value">@Simulation.Stats.TotalCustomersServed</p>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Максмальна черга</h6>
+				<p class="stat-value">@Simulation.Stats.MaxLength</p>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Середня черга</h6>
+				<p class="stat-value">@Simulation.Stats.AverageLength.ToString("F1")</p>
 			</div>
 		</div>
 	</div>
-</div>
 
-<div class="accordion mb-3" id="logAccordion">
-	<div class="accordion-item">
-		<h2 class="accordion-header" id="logHeading">
-			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#logCollapse" aria-expanded="false" aria-controls="logCollapse">
-				Журнал подій (1000 останніх)
-			</button>
-		</h2>
-		<div id="logCollapse" class="accordion-collapse collapse" aria-labelledby="logHeading" data-bs-parent="#logAccordion">
-			<div class="accordion-body">
-				@if (Simulation.LogEntries.IsEmpty())
-				{
-					<p>Поки що подій немає.</p>
-				}
-				else
-				{
-					<ul class="mb-0">
-						@foreach (var entry in Simulation.LogEntries.ToList().OrderByDescending(x => x.Timestamp))
-						{
-							<li>
-								@entry.Timestamp.ToString("HH:mm:ss") — @FormatEvent(entry)
-							</li>
-						}
-					</ul>
-				}
+	<!-- Каси -->
+	<div class="row g-4 mt-2">
+		<div class="col-12">
+			<div class="section-card">
+				<h5 class="mb-3">📋 Каси</h5>
+				<div class="row g-3">
+					@foreach (var item in Simulation.CashDesks)
+					{
+						<div class="col-md-6 col-lg-3">
+							<div class="cashdesk-item @(item.IsBusy ? "busy" : "free")">
+								<span class="cashdesk-id">Каса #@item.Id</span>
+								<span class="cashdesk-status">
+									@if (item.IsBusy)
+									{
+										<span>👤 Покупець #@item.CurrentCustomer.Id</span>
+									}
+									else
+									{
+										<span>✓ Вільна</span>
+									}
+								</span>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Управління -->
+	<div class="row g-4 mt-2">
+		<div class="col-12">
+			<div class="section-card">
+				<div class="d-flex justify-content-between align-items-center mb-3">
+					<h5 class="mb-0">⚙️ Управління</h5>
+					<div>
+						<button class="btn btn-success me-2" @onclick="() => Simulation.Start()" disabled="@Simulation.Running">Старт</button>
+						<button class="btn btn-danger me-2" @onclick="() => Simulation.Stop()" disabled="@(!Simulation.Running)">Стоп</button>
+						<button class="btn btn-secondary" @onclick="() => Simulation.Reset()">Очистити</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Налаштування -->
+	<div class="row g-4 mt-2">
+		<div class="col-12">
+			<div class="section-card">
+				<h5 class="mb-4">🎛️ Налаштування симуляції</h5>
+				<div class="row g-4">
+					<div class="col-lg-4">
+						<label class="form-label fw-semibold">Прискорення часу: <span class="badge bg-primary">@speedUp x</span></label>
+						<input type="range" class="form-range" min="1" max="1000" step="1" @bind="speedUp" @bind:event="oninput" @bind:after="ApplySettings" disabled="@Simulation.Running" />
+					</div>
+
+					<div class="col-lg-4">
+						<label class="form-label fw-semibold">Генерація покупців (сек)</label>
+						<div class="slider-pair">
+							<div>
+								<small class="text-muted">Мін: @generationMin</small>
+								<input type="range" class="form-range" min="10" max="1200" step="10" @bind="generationMin" @bind:event="oninput" @bind:after="ApplySettings" />
+							</div>
+							<div>
+								<small class="text-muted">Макс: @generationMax</small>
+								<input type="range" class="form-range" min="10" max="1200" step="10" @bind="generationMax" @bind:event="oninput" @bind:after="ApplySettings" />
+							</div>
+						</div>
+					</div>
+
+					<div class="col-lg-4">
+						<label class="form-label fw-semibold">Обслуговування (сек)</label>
+						<div class="slider-pair">
+							<div>
+								<small class="text-muted">Мін: @servingMin</small>
+								<input type="range" class="form-range" min="10" max="1200" step="10" @bind="servingMin" @bind:event="oninput" @bind:after="ApplySettings" />
+							</div>
+							<div>
+								<small class="text-muted">Макс: @servingMax</small>
+								<input type="range" class="form-range" min="10" max="1200" step="10" @bind="servingMax" @bind:event="oninput" @bind:after="ApplySettings" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Таблиця клієнтів -->
+	<div class="row g-4 mt-2">
+		<div class="col-12">
+			<div class="accordion" id="mainAccordion">
+				<div class="accordion-item">
+					<h2 class="accordion-header">
+						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customerTableCollapse">
+							📊 Часи обслуговування клієнтів (останні 100)
+						</button>
+					</h2>
+					<div id="customerTableCollapse" class="accordion-collapse collapse" data-bs-parent="#mainAccordion">
+						<div class="accordion-body">
+							@if (Simulation.CustomerEntries.IsEmpty())
+							{
+								<p class="text-muted mb-0">Ще немає завершених обслуговувань.</p>
+							}
+							else
+							{
+								<div class="table-responsive">
+									<table class="table table-sm table-hover align-middle mb-0">
+										<thead class="table-light">
+											<tr>
+												<th>Клієнт</th>
+												<th>Очікування</th>
+												<th>Обслуговування</th>
+												<th>Всього</th>
+											</tr>
+										</thead>
+										<tbody>
+											@foreach (var customer in Simulation.CustomerEntries.ToList().OrderByDescending(x => x.ServiceFinishedAt))
+											{
+												<tr>
+													<td><span class="badge bg-info">#@customer.Id</span></td>
+													<td>@FormatSeconds(customer.WaitingTime * Simulation.SpeedUpTimes)</td>
+													<td>@FormatSeconds(customer.ServiceTime * Simulation.SpeedUpTimes)</td>
+													<td><strong>@FormatSeconds(customer.TotalTime * Simulation.SpeedUpTimes)</strong></td>
+												</tr>
+											}
+										</tbody>
+									</table>
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Журнал подій -->
+	<div class="row g-4 mt-2 mb-4">
+		<div class="col-12">
+			<div class="accordion" id="logsAccordion">
+				<div class="accordion-item">
+					<h2 class="accordion-header">
+						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#logCollapse">
+							📝 Журнал подій (1000 останніх)
+						</button>
+					</h2>
+					<div id="logCollapse" class="accordion-collapse collapse" data-bs-parent="#logsAccordion">
+						<div class="accordion-body">
+							@if (Simulation.LogEntries.IsEmpty())
+							{
+								<p class="text-muted mb-0">Поки що подій немає.</p>
+							}
+							else
+							{
+								<div class="log-container">
+									@foreach (var entry in Simulation.LogEntries.ToList().OrderByDescending(x => x.Timestamp))
+									{
+										<div class="log-entry">
+											<span class="log-time">@entry.Timestamp.ToString("HH:mm:ss")</span>
+											<span class="log-message">@FormatEvent(entry)</span>
+										</div>
+									}
+								</div>
+							}
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -155,9 +249,7 @@
 		if (speedUp < 1)
 			speedUp = 1;
 
-		if (!Simulation.Running)
-			Simulation.SpeedUpTimes = (uint)speedUp;
-
+		Simulation.SpeedUpTimes = (uint)speedUp;
 		Simulation.GenerationIntervalMs = ((uint)generationMin, (uint)generationMax);
 		Simulation.ServingIntervalMs = ((uint)servingMin, (uint)servingMax);
 	}
@@ -175,7 +267,7 @@
 			EventType.SimulationStopped => "Симуляцію зупинено",
 			EventType.CustomerEnqueued => $"Покупця додано в чергу{customer}",
 			EventType.CustomerDequeued => $"Покупця взято з черги{customer}{cashDesk}",
-			EventType.ServiceStarted => $"Почато обслуговування{customer}{cashDesk}",
+			EventType.ServiceStarted => $"Почано обслуговування{customer}{cashDesk}",
 			EventType.ServiceFinished => $"Завершено обслуговування{customer}{cashDesk}",
 			EventType.CustomerNotEnqueued => $"Не вдалося взяти покупця з черги{cashDesk}",
 			_ => "Невідома подія"

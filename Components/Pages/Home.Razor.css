@@ -1,4 +1,226 @@
-﻿.long-slider {
-	width: 100%;
-	max-width: 25rem;
+﻿:root {
+	--card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.header-section {
+	border-bottom: 2px solid #f0f0f0;
+	padding-bottom: 1.5rem;
+}
+
+.header-section h1 {
+	color: #2c3e50;
+	font-weight: 600;
+}
+
+.header-section .text-muted {
+	font-size: 1rem;
+}
+
+/* Карти статистики */
+.stat-card {
+	background: white;
+	padding: 1.5rem;
+	box-shadow: var(--card-shadow);
+	border: 1px solid #e9ecef;
+	transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+	box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+	transform: translateY(-2px);
+}
+
+.stat-label {
+	color: #6c757d;
+	font-size: 0.875rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 0.5rem;
+}
+
+.stat-value {
+	font-size: 2rem;
+	font-weight: 700;
+	color: #0d6efd;
+	margin: 0;
+}
+
+/* Карти секцій */
+.section-card {
+	background: white;
+	padding: 1.5rem;
+	box-shadow: var(--card-shadow);
+	border: 1px solid #e9ecef;
+}
+
+.section-card h5 {
+	color: #2c3e50;
+	font-weight: 600;
+	margin-bottom: 1rem;
+}
+
+/* Касы */
+.cashdesk-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	transition: all 0.3s ease;
+	border: 2px solid #e9ecef;
+	background: #f8f9fa;
+	min-height: 100px;
+}
+
+.cashdesk-item.free {
+	border-color: #198754;
+	background: #f0fdf4;
+}
+
+.cashdesk-item.busy {
+	border-color: #fd7e14;
+	background: #fff7ed;
+	box-shadow: 0 0 0.5rem rgba(253, 126, 20, 0.2);
+}
+
+.cashdesk-id {
+	font-weight: 700;
+	color: #2c3e50;
+	margin-bottom: 0.5rem;
+	font-size: 0.95rem;
+}
+
+.cashdesk-status {
+	font-size: 0.875rem;
+	color: #6c757d;
+}
+
+/* Слайдери */
+.slider-pair {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.slider-pair > div {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+/* Акордеон */
+.accordion-button:not(.collapsed) {
+	background-color: #f8f9fa;
+	box-shadow: none;
+}
+
+.accordion-button {
+	font-weight: 600;
+	color: #2c3e50;
+	border-bottom: 1px solid #e9ecef;
+}
+
+.accordion-button:focus {
+	box-shadow: none;
+	border-color: #0d6efd;
+}
+
+.accordion-item {
+	border: 1px solid #e9ecef;
+	margin-bottom: 1rem;
+	overflow: hidden;
+	box-shadow: var(--card-shadow);
+}
+
+/* Таблиця */
+.table-hover tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+.table thead th {
+	font-weight: 600;
+	color: #495057;
+	border-bottom: 2px solid #dee2e6;
+}
+
+/* Журнал подій */
+.log-container {
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.log-entry {
+	display: flex;
+	gap: 1rem;
+	padding: 0.75rem;
+	border-bottom: 1px solid #e9ecef;
+	font-size: 0.9rem;
+	align-items: flex-start;
+}
+
+.log-entry:last-child {
+	border-bottom: none;
+}
+
+.log-time {
+	color: #0d6efd;
+	font-weight: 600;
+	min-width: 70px;
+	flex-shrink: 0;
+}
+
+.log-message {
+	color: #495057;
+	word-break: break-word;
+}
+
+/* Кнопки */
+.btn {
+	font-weight: 600;
+	transition: all 0.2s ease;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Form elements */
+.form-label {
+	color: #2c3e50;
+	margin-bottom: 0.75rem;
+}
+
+.form-range {
+	height: 0.375rem;
+	border-radius: 0.25rem;
+}
+
+.form-range::-webkit-slider-thumb {
+	background: #0d6efd;
+	border-radius: 50%;
+}
+
+.form-range::-moz-range-thumb {
+	background: #0d6efd;
+	border-radius: 50%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.header-section h1 {
+		font-size: 1.75rem;
+	}
+
+	.stat-value {
+		font-size: 1.5rem;
+	}
+
+	.cashdesk-item {
+		min-height: 80px;
+	}
+
+	.log-container {
+		max-height: 300px;
+	}
 }

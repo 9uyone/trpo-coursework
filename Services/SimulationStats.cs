@@ -30,4 +30,12 @@ public class SimulationStats: IStatsReadOnly {
 		_sumLengths += QueueLength;
 		_countSamples++;
 	}
+
+	internal void Reset() {
+		_totalCustomersServed = 0;
+		MaxLength = 0;
+		_sumLengths = 0;
+		_countSamples = 0;
+		QueueLength = 0;
+	}
 }
