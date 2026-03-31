@@ -8,82 +8,9 @@
 <PageTitle>ЦУМ: Симуляція кас</PageTitle>
 
 <div class="container-fluid py-4">
-	<div class="header-section mb-5">
-		<h1 class="display-5 mb-2">🏪 ЦУМ: Симуляція кас</h1>
+	<div class="header-section mb-3">
+		<h1 class="display-2 mb-2" style="font-size: 3rem">🏪 ЦУМ: Симуляція кас</h1>
 		<p class="text-muted">Модель паралельної обробки заявок</p>
-	</div>
-
-	<div class="row g-4">
-		<!-- Статистика -->
-		<div class="col-lg-3 col-md-6">
-			<div class="stat-card">
-				<h6 class="stat-label">Черга</h6>
-				<p class="stat-value">@Simulation.Stats.QueueLength</p>
-			</div>
-		</div>
-		<div class="col-lg-3 col-md-6">
-			<div class="stat-card">
-				<h6 class="stat-label">Обслужено</h6>
-				<p class="stat-value">@Simulation.Stats.TotalCustomersServed</p>
-			</div>
-		</div>
-		<div class="col-lg-3 col-md-6">
-			<div class="stat-card">
-				<h6 class="stat-label">Максмальна черга</h6>
-				<p class="stat-value">@Simulation.Stats.MaxLength</p>
-			</div>
-		</div>
-		<div class="col-lg-3 col-md-6">
-			<div class="stat-card">
-				<h6 class="stat-label">Середня черга</h6>
-				<p class="stat-value">@Simulation.Stats.AverageLength.ToString("F1")</p>
-			</div>
-		</div>
-	</div>
-
-	<!-- Каси -->
-	<div class="row g-4 mt-2">
-		<div class="col-12">
-			<div class="section-card">
-				<h5 class="mb-3">📋 Каси</h5>
-				<div class="row g-3">
-					@foreach (var item in Simulation.CashDesks)
-					{
-						<div class="col-md-6 col-lg-3">
-							<div class="cashdesk-item @(item.IsBusy ? "busy" : "free")">
-								<span class="cashdesk-id">Каса #@item.Id</span>
-								<span class="cashdesk-status">
-									@if (item.IsBusy)
-									{
-										<span>👤 Покупець #@item.CurrentCustomer.Id</span>
-									}
-									else
-									{
-										<span>✓ Вільна</span>
-									}
-								</span>
-							</div>
-						</div>
-					}
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Управління -->
-	<div class="row g-4 mt-2">
-		<div class="col-12">
-			<div class="section-card">
-				<div class="d-flex justify-content-between align-items-center mb-3">
-					<h5 class="mb-0">⚙️ Управління</h5>
-					<div>
-						<button class="btn btn-success me-2" @onclick="() => Simulation.Start()" disabled="@Simulation.Running">Старт</button>
-						<button class="btn btn-danger me-2" @onclick="() => Simulation.Stop()" disabled="@(!Simulation.Running)">Стоп</button>
-						<button class="btn btn-secondary" @onclick="() => Simulation.Reset()">Очистити</button>
-					</div>
-				</div>
-			</div>
-		</div>
 	</div>
 
 	<!-- Налаштування -->
@@ -129,8 +56,81 @@
 		</div>
 	</div>
 
+	<!-- Управління -->
+	<div class="row g-4 section-gap">
+		<div class="col-12">
+			<div class="section-card">
+				<div class="control-header">
+					<h5 class="mb-0">⚙️ Управління</h5>
+					<div class="control-actions">
+						<button class="btn btn-success" @onclick="() => Simulation.Start()" disabled="@Simulation.Running">Старт</button>
+						<button class="btn btn-danger" @onclick="() => Simulation.Stop()" disabled="@(!Simulation.Running)">Стоп</button>
+						<button class="btn btn-secondary" @onclick="() => Simulation.Reset()">Очистити</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 section-gap">
+		<!-- Статистика -->
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Черга</h6>
+				<p class="stat-value">@Simulation.Stats.QueueLength</p>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Обслужено</h6>
+				<p class="stat-value">@Simulation.Stats.TotalCustomersServed</p>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Максмальна черга</h6>
+				<p class="stat-value">@Simulation.Stats.MaxLength</p>
+			</div>
+		</div>
+		<div class="col-lg-3 col-md-6">
+			<div class="stat-card">
+				<h6 class="stat-label">Середня черга</h6>
+				<p class="stat-value">@Simulation.Stats.AverageLength.ToString("F1")</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Каси -->
+	<div class="row g-4 section-gap">
+		<div class="col-12">
+			<div class="section-card">
+				<h5 class="mb-3">📋 Каси</h5>
+				<div class="row g-3">
+					@foreach (var item in Simulation.CashDesks)
+					{
+						<div class="col-md-6 col-lg-3">
+							<div class="cashdesk-item @(item.IsBusy ? "busy" : "free")">
+								<span class="cashdesk-id">Каса #@item.Id</span>
+								<span class="cashdesk-status">
+									@if (item.IsBusy)
+									{
+										<span>👤 Покупець #@item.CurrentCustomer.Id</span>
+									}
+									else
+									{
+										<span>✓ Вільна</span>
+									}
+								</span>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- Таблиця клієнтів -->
-	<div class="row g-4 mt-2">
+	<div class="row g-4 section-gap">
 		<div class="col-12">
 			<div class="accordion" id="mainAccordion">
 				<div class="accordion-item">
@@ -179,7 +179,7 @@
 	</div>
 
 	<!-- Журнал подій -->
-	<div class="row g-4 mt-2 mb-4">
+	<div class="row g-4 mb-4" style="margin-top: 0.2rem">
 		<div class="col-12">
 			<div class="accordion" id="logsAccordion">
 				<div class="accordion-item">
