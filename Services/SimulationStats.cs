@@ -2,37 +2,55 @@
 
 namespace TRPO_Coursework.Services;
 
-public class SimulationStats: IStatsReadOnly {
+public class SimulationStats : IStatsReadOnly {
 	private uint _totalCustomersServed;
-	private uint _sumLengths;
-	private uint _countSamples;
+	private double _weightedSum; // довжина * час (в секундах симуляції)
 	private double _totalWaitingSeconds;
+	private DateTime _lastChangeTime;
+	private DateTime _startTime;
+	private uint _queueLength;
 
-	private Lock _lockTotalWaitingTime = new();
+	private readonly Lock _lock = new();
+	private readonly Lock _lockTotalWaitingTime = new();
 
 	// IStatsReadOnly
 	public uint TotalCustomersServed => Volatile.Read(ref _totalCustomersServed);
 	public uint MaxLength { get; private set; }
-	public double AverageWaitingTimeSeconds => TotalCustomersServed == 0 ? 0 : _totalWaitingSeconds / TotalCustomersServed;
-	public double AverageLength => (double)_sumLengths / _countSamples;
-	public uint QueueLength {  get; private set; }
+	public uint QueueLength => Volatile.Read(ref _queueLength);
 
-	// Methods to update stats
+	public double AverageWaitingTimeSeconds =>
+		TotalCustomersServed == 0 ? 0 : _totalWaitingSeconds / TotalCustomersServed;
+
+	public double AverageLength {
+		get {
+			lock (_lock) {
+				var now = DateTime.UtcNow;
+				var elapsedSeconds = (now - _lastChangeTime).TotalSeconds;
+				var weightedSum = _weightedSum + QueueLength * elapsedSeconds;
+				var totalTime = (now - _startTime).TotalSeconds;
+				return totalTime <= 0 ? 0 : weightedSum / totalTime;
+			}
+		}
+	}
+
+	// Methods
 	internal void IncrementCustomersServed() {
 		Interlocked.Increment(ref _totalCustomersServed);
 	}
 
 	internal void IncrementQueue() {
-		QueueLength++;
-		MaxLength = Math.Max(MaxLength, QueueLength);
-		_sumLengths += QueueLength;
-		_countSamples++;
+		lock (_lock) {
+			UpdateWeightedSum();
+			_queueLength++;
+			MaxLength = Math.Max(MaxLength, QueueLength);
+		}
 	}
 
 	internal void DecrementQueue() {
-		QueueLength--;
-		_sumLengths += QueueLength;
-		_countSamples++;
+		lock (_lock) {
+			UpdateWeightedSum();
+			_queueLength--;
+		}
 	}
 
 	internal void AddWaitingTime(double waitingTime) {
@@ -44,9 +62,19 @@ public class SimulationStats: IStatsReadOnly {
 	internal void Reset() {
 		_totalCustomersServed = 0;
 		MaxLength = 0;
-		_sumLengths = 0;
-		_countSamples = 0;
-		QueueLength = 0;
+		_queueLength = 0;
 		_totalWaitingSeconds = 0;
+		_weightedSum = 0;
+
+		_startTime = DateTime.UtcNow;
+		_lastChangeTime = _startTime;
+	}
+
+	private void UpdateWeightedSum() {
+		var now = DateTime.UtcNow;
+		var elapsedSeconds = (now - _lastChangeTime).TotalSeconds;
+
+		_weightedSum += QueueLength * elapsedSeconds;
+		_lastChangeTime = now;
 	}
 }

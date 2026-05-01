@@ -95,13 +95,13 @@
 		<div class="col-6 col-md-4">
 			<div class="stat-card">
 				<h6 class="stat-label">Середня черга</h6>
-				<p class="stat-value">@Simulation.Stats.AverageLength.ToString("F1")</p>
+				<p class="stat-value">@Simulation.Stats.AverageLength.ToString("F2")</p>
 			</div>
 		</div>
 		<div class="col-6 col-md-4">
 			<div class="stat-card">
 				<h6 class="stat-label">Середній час очікування, с</h6>
-				<p class="stat-value">@Simulation.Stats.AverageWaitingTimeSeconds.ToString("F1")</p>
+				<p class="stat-value">@Simulation.Stats.AverageWaitingTimeSeconds.ToString("F2")</p>
 			</div>
 		</div>
 	</div>
@@ -246,16 +246,14 @@
 
 	private void ApplySettings()
 	{
-		if (generationMin > generationMax)
-			generationMax = generationMin;
+		if (generationMin > generationMax) generationMax = generationMin;
 
-		if (servingMin > servingMax)
-			servingMax = servingMin;
+		if (servingMin > servingMax) servingMax = servingMin;
 
-		if (speedUp < 1)
-			speedUp = 1;
+		if (speedUp < 1) speedUp = 1;
 
-		Simulation.SpeedUpTimes = (uint)speedUp;
+		if(!Simulation.Running) Simulation.SpeedUpTimes = (uint)speedUp;
+
 		Simulation.GenerationIntervalMs = ((uint)generationMin, (uint)generationMax);
 		Simulation.ServingIntervalMs = ((uint)servingMin, (uint)servingMax);
 	}

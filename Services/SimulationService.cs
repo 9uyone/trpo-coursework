@@ -58,6 +58,7 @@ public class SimulationService {
 		if (Running)
 			return;
 
+		_stats.Reset();
 		Running = true;
 		cancellationTokenSource = new();
 
@@ -80,10 +81,8 @@ public class SimulationService {
 		cancellationTokenSource?.Dispose();
 		cancellationTokenSource = null;
 
-		foreach (var cashDesk in CashDesks) {
-			cashDesk.IsBusy = false;
+		foreach (var cashDesk in CashDesks)
 			cashDesk.CurrentCustomer = null;
-		}
 
 		LogEvent(EventType.SimulationStopped);
 		//OnChange?.Invoke();
@@ -134,7 +133,6 @@ public class SimulationService {
 
 				_stats.DecrementQueue();
 				customer.StartService();
-				cashDesk.IsBusy = true;
 				cashDesk.CurrentCustomer = customer;
 				_stats.AddWaitingTime(customer.WaitingTime.TotalSeconds * SpeedUpTimes);
 
@@ -147,7 +145,6 @@ public class SimulationService {
 
 				_stats.IncrementCustomersServed();
 				customer.FinishService();
-				cashDesk.IsBusy = false;
 				cashDesk.CurrentCustomer = null;
 				
 				CustomerEntries.Add(customer);
@@ -156,7 +153,6 @@ public class SimulationService {
 			}
 		}
 		catch (OperationCanceledException) {
-			cashDesk.IsBusy = false;
 			cashDesk.CurrentCustomer = null;
 			OnChange?.Invoke();
 		}

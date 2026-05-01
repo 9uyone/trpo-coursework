@@ -9,6 +9,6 @@ public class CashDesk {
 
 	public uint Id { get; }
 
-	public bool IsBusy { get; set; }
+	public bool IsBusy => CurrentCustomer != null;
 	public Customer? CurrentCustomer { get; set; }
 }
