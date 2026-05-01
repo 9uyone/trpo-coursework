@@ -6,4 +6,5 @@ public interface IStatsReadOnly {
 	uint QueueLength { get; }
 	uint MaxLength { get; }
 	double AverageLength { get; }
+	double AverageWaitingTimeSeconds { get; }
 }

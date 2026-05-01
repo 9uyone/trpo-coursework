@@ -74,28 +74,34 @@
 
 	<div class="row g-4 section-gap">
 		<!-- Статистика -->
-		<div class="col-lg-3 col-md-6">
+		<div class="col-6 col-md-4">
 			<div class="stat-card">
 				<h6 class="stat-label">Черга</h6>
 				<p class="stat-value">@Simulation.Stats.QueueLength</p>
 			</div>
 		</div>
-		<div class="col-lg-3 col-md-6">
+		<div class="col-6 col-md-4">
 			<div class="stat-card">
 				<h6 class="stat-label">Обслужено</h6>
 				<p class="stat-value">@Simulation.Stats.TotalCustomersServed</p>
 			</div>
 		</div>
-		<div class="col-lg-3 col-md-6">
+		<div class="col-6 col-md-4">
 			<div class="stat-card">
 				<h6 class="stat-label">Максмальна черга</h6>
 				<p class="stat-value">@Simulation.Stats.MaxLength</p>
 			</div>
 		</div>
-		<div class="col-lg-3 col-md-6">
+		<div class="col-6 col-md-4">
 			<div class="stat-card">
 				<h6 class="stat-label">Середня черга</h6>
 				<p class="stat-value">@Simulation.Stats.AverageLength.ToString("F1")</p>
+			</div>
+		</div>
+		<div class="col-6 col-md-4">
+			<div class="stat-card">
+				<h6 class="stat-label">Середній час очікування, с</h6>
+				<p class="stat-value">@Simulation.Stats.AverageWaitingTimeSeconds.ToString("F1")</p>
 			</div>
 		</div>
 	</div>

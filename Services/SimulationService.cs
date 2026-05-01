@@ -136,6 +136,7 @@ public class SimulationService {
 				customer.StartService();
 				cashDesk.IsBusy = true;
 				cashDesk.CurrentCustomer = customer;
+				_stats.AddWaitingTime(customer.WaitingTime.TotalSeconds * SpeedUpTimes);
 
 				LogEvent(EventType.ServiceStarted, customer.Id, cashDesk.Id);
 				//OnChange?.Invoke();
