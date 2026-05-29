@@ -8,8 +8,8 @@ namespace TRPO_Coursework.Services;
 
 public class SimulationService {
 	// State & sync
-	private CancellationTokenSource? cancellationTokenSource;
-	private readonly SemaphoreSlim semaphore = new(0);
+	private CancellationTokenSource? _cancellationTokenSource;
+	private readonly SemaphoreSlim _semaphore = new(0);
 	private readonly SimulationStats _stats = new SimulationStats();
 	private ConcurrentQueue<Customer> Queue { get; set; } = new();
 
@@ -35,7 +35,7 @@ public class SimulationService {
 		set {
 			if (value.Item1 > value.Item2)
 				throw new ArgumentException("Мінімальний час генерації має бути <= максимальному часу.");
-		field = value;
+			field = value;
 	} } = (2 * 60, 7 * 60);
 
 	public (uint, uint) ServingIntervalMs {
@@ -60,12 +60,12 @@ public class SimulationService {
 
 		_stats.Reset();
 		Running = true;
-		cancellationTokenSource = new();
+		_cancellationTokenSource = new();
 
-		_ = Task.Run(() => CustomerGenerator(cancellationTokenSource.Token));
+		_ = Task.Run(() => CustomerGenerator(_cancellationTokenSource.Token));
 		for (var i = 0; i < CashDesks.Count; i++) {
 			var cashDesk = CashDesks[i];
-			_ = Task.Run(() => CashDeskWorker(cashDesk, cancellationTokenSource.Token));
+			_ = Task.Run(() => CashDeskWorker(cashDesk, _cancellationTokenSource.Token));
 		}
 
 		LogEvent(EventType.SimulationStarted);
@@ -77,9 +77,9 @@ public class SimulationService {
 			return;
 
 		Running = false;
-		cancellationTokenSource?.Cancel();
-		cancellationTokenSource?.Dispose();
-		cancellationTokenSource = null;
+		_cancellationTokenSource?.Cancel();
+		_cancellationTokenSource?.Dispose();
+		_cancellationTokenSource = null;
 
 		foreach (var cashDesk in CashDesks)
 			cashDesk.CurrentCustomer = null;
@@ -111,7 +111,7 @@ public class SimulationService {
 				Queue.Enqueue(customer);
 
 				_stats.IncrementQueue();
-				semaphore.Release();
+				_semaphore.Release();
 				LogEvent(EventType.CustomerEnqueued, customer.Id);
 				//OnChange?.Invoke();
 			}
@@ -122,7 +122,7 @@ public class SimulationService {
 	private async Task CashDeskWorker(CashDesk cashDesk, CancellationToken cancellationToken) {
 		try {
 			while (!cancellationToken.IsCancellationRequested) {
-				await semaphore.WaitAsync(cancellationToken);
+				await _semaphore.WaitAsync(cancellationToken);
 
 				if (!Queue.TryDequeue(out var customer)) {
 					LogEvent(EventType.CustomerNotEnqueued, cashDeskId: cashDesk.Id);
